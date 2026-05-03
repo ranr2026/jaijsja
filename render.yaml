@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: rpw-booster-api
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: >
+      npm install -g pnpm@9 &&
+      pnpm install --frozen-lockfile &&
+      python3 -m pip install --user curl-cffi requests &&
+      pnpm --filter @workspace/api-server run build
+    startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rpw-booster-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+
+databases:
+  - name: rpw-booster-db
+    databaseName: rpwbooster
+    plan: free
+    region: singapore
